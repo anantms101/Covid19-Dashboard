@@ -72,7 +72,7 @@ Data used in this project is sourced from:
 
 **Anant Sabu**  
 MSc Statistics | Data Analyst | Dashboard Developer  
-[LinkedIn](https://www.linkedin.com/in/anantsabu) *(add your link here if available)*
+[LinkedIn](https://www.linkedin.com/in/anantsabu3142/) 
 
 ---
 

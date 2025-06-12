@@ -1,0 +1,23 @@
+let
+    Source = Csv.Document(File.Contents("D:\PROJECTGIT\COVID19\owid-covid-data.csv"),[Delimiter=",", Columns=23, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"iso_code", type text}, {"continent", type text}, {"location", type text}, {"date", type date}, {"total_cases", Int64.Type}, {"new_cases", Int64.Type}, {"total_deaths", Int64.Type}, {"new_deaths", Int64.Type}, {"total_cases_per_million", type number}, {"new_cases_per_million", type number}, {"total_deaths_per_million", type number}, {"new_deaths_per_million", type number}, {"population_density", type number}, {"median_age", type number}, {"aged_65_older", type number}, {"aged_70_older", type number}, {"gdp_per_capita", type number}, {"cardiovasc_death_rate", type number}, {"diabetes_prevalence", type number}, {"hospital_beds_per_thousand", type number}, {"life_expectancy", type number}, {"human_development_index", type number}, {"population", Int64.Type}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"hospital_beds_per_thousand"}),
+    #"Merged Queries" = Table.NestedJoin(#"Removed Columns", {"location"}, Country_average, {"location"}, "Country_average", JoinKind.LeftOuter),
+    #"Expanded Country_average" = Table.ExpandTableColumn(#"Merged Queries", "Country_average", {"location", "Avg_median_age", "Avg_population_density", "Avg_aged_65_older", "Avg_aged_70_older", "Avg_gdp_per_capita", "Avg_cardiovasc_death_rate", "Avg_diabetes_prevalence", "Avg_human_development_index", "Avg_life_expectancy"}, {"location.1", "Avg_median_age", "Avg_population_density", "Avg_aged_65_older", "Avg_aged_70_older", "Avg_gdp_per_capita", "Avg_cardiovasc_death_rate", "Avg_diabetes_prevalence", "Avg_human_development_index", "Avg_life_expectancy"}),
+    #"Added Custom" = Table.AddColumn(#"Expanded Country_average", "median_age_filled", each if [median_age] is null then [Avg_median_age] else [median_age]),
+    #"Added Custom1" = Table.AddColumn(#"Added Custom", "population_density_filled", each if [population_density] is null then [Avg_population_density] else [population_density]),
+    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "aged_65_older_filled", each if [aged_65_older] is null then [Avg_aged_65_older] else [aged_65_older]),
+    #"Added Custom3" = Table.AddColumn(#"Added Custom2", "aged_70_older_filled", each if [aged_70_older] is null then [Avg_aged_70_older] else [aged_70_older]),
+    #"Added Custom4" = Table.AddColumn(#"Added Custom3", "gdp_per_capita_filled", each if [gdp_per_capita] is null then [Avg_gdp_per_capita] else [gdp_per_capita]),
+    #"Added Custom5" = Table.AddColumn(#"Added Custom4", "cardiovasc_death_rate_filled", each if [cardiovasc_death_rate] is null then [Avg_cardiovasc_death_rate] else [cardiovasc_death_rate]),
+    #"Added Custom6" = Table.AddColumn(#"Added Custom5", "diabetes_prevalence_filled", each if [diabetes_prevalence] is null then [Avg_diabetes_prevalence] else [diabetes_prevalence]),
+    #"Added Custom7" = Table.AddColumn(#"Added Custom6", "human_development_index_filled", each if [human_development_index] is null then [Avg_human_development_index] else [human_development_index]),
+    #"Added Custom8" = Table.AddColumn(#"Added Custom7", "life_expectancy_filled", each if [life_expectancy] is null then [Avg_life_expectancy] else [life_expectancy]),
+    #"Removed Columns1" = Table.RemoveColumns(#"Added Custom8",{"median_age", "aged_65_older", "aged_70_older", "gdp_per_capita", "cardiovasc_death_rate", "diabetes_prevalence", "human_development_index", "life_expectancy", "Avg_median_age", "Avg_population_density", "Avg_aged_65_older", "Avg_aged_70_older", "Avg_gdp_per_capita", "Avg_cardiovasc_death_rate", "Avg_diabetes_prevalence", "Avg_human_development_index", "Avg_life_expectancy"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Columns1",{{"median_age_filled", "median_age"}}),
+    #"Removed Columns2" = Table.RemoveColumns(#"Renamed Columns",{"population_density"}),
+    #"Renamed Columns1" = Table.RenameColumns(#"Removed Columns2",{{"population_density_filled", "population_density"}, {"aged_65_older_filled", "aged_65_older"}, {"aged_70_older_filled", "aged_70_older"}, {"gdp_per_capita_filled", "gdp_per_capita"}, {"cardiovasc_death_rate_filled", "cardiovasc_death_rate"}, {"diabetes_prevalence_filled", "diabetes_prevalence"}, {"human_development_index_filled", "human_development_index"}, {"life_expectancy_filled", "life_expectancy"}}),
+    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns1", each [median_age] <> 0)
+in
+    #"Filtered Rows"
